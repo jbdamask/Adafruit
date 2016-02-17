@@ -1,2 +1,2 @@
 # Adafruit
-Learning about Adafruit and Arduino
+Repo for messing around with Adafruit goodies
