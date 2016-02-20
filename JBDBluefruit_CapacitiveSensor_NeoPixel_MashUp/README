@@ -1,3 +1,4 @@
+ 
   Author: Adafruit folks, John B Damask
   Created: Februafy 2016
   Purpose: Prototyping
@@ -11,3 +12,4 @@
   Reference: https://learn.adafruit.com/adafruit-flora-bluefruit-le
   Reference: https://learn.adafruit.com/flora-rgb-smart-pixels/run-pixel-test-code
  
+Lastly, since I just copy/pasted there's some dead code and irrelevent comments
