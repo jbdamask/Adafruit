@@ -1,0 +1,2 @@
+ Modified by John Damask 2016 to make Flora's on-board NeoPixel fade in and out when capacative sensor is touched/released
+ Note the original code by Paul and Becky (Adafruit) uses the FloraPixel library.
