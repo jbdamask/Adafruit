@@ -1,0 +1,20 @@
+Author: Adafruit folks, John B Damask
+Created: February 2016
+Purpose: Prototyping
+Function: This code configures Flora and Flora Bluefruit LE to communicate
+          with each other and the Bluefruit LE Connect iOS app. The 
+          ultimate goal is to test using adafruit.io with MQTT to change the
+          color of the on board NeoPixel. The iOS app is the conduit.
+Notes:  Adafruit.io configuration
+        1) Connect, etc
+        2) Create feeds thing1, thing2
+        iOS app configuration
+        1) Connect to Bluefruit LE using mode UART
+        2) Press MQTT
+        3) Enter server, port, user, key
+        4) Publish UART RX: <name>/feeds/thing1 (At least once)
+        5) Subscribe: <name>/feeds/thing2 (At least once); Action: Transmit
+        With this configured, I can connect using Arduino IDE's Serial Monitor
+        and any AT+ command I send will turn the on board NeoPixel to green. Then
+        from adafruit.io feed thing2, I can Create Data and if I use the
+        word RED, the NeoPixel will turn red.
