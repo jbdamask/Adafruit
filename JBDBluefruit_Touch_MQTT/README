@@ -1,0 +1,4 @@
+I'll change this code (or at least the title). There's nothing MQTT about it. 
+This is simply the controller code that connects Flora and Flora Bluefruit LE together with a
+capacitive sensor. The onboard NeoPixel's color is controlled by the touch sensor and by UART BLE commands
+(for example, those sent by Adafruit's Bluefruit LE Connect iOS app
