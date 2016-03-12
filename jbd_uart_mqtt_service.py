@@ -26,6 +26,8 @@
 # Credits: Original code for UART and MQTT by Tony DiCola from Adafruit
 #          BLE: Adafruit_Python_BluefruitLE/examples/uart_service.py
 #          MQTT: io-client-python/examples/mqtt_client.py
+#   
+# Run:   $ python jbd_uart_mqtt_service.py
 
 import sys
 from Adafruit_IO import MQTTClient
