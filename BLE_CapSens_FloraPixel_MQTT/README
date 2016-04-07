@@ -1,1 +1,4 @@
 Capacitive touch to control Flora neo pixel and pub/sub via MQTT and Adafruit's Connect LE app
+
+Bad name. The controller doesn't do anything w/ MQTT. It just sends & receives data over BLE. My phone acts as the internet gateway
+and Adafruit's app doesn't all the communicating w/ MQTT via Adafruit.io
