@@ -1,1 +1,14 @@
 Same as JBDBluefruit_CapacitiveSensor_NeoPixel_MashUp but this one uses Flora's onboard NeoPixel
+
+  Author: Adafruit folks, John B Damask
+  Created: Februafy 2016
+  Purpose: Prototyping
+  Function: This code configures various tech from Adafruit including, Flora
+            Bluefruit LE, NeoPixel and the capacitive sensor library to do the following:
+            1 - Conductive fabric touched, onboard NeoPixel turns GREEN
+            2 - Pick whatever color using Adafruit Bluefruit LE iPhone app, NeoPixel turns whatever
+ 
+  Notes: This is basically a mash up of various Adafruit tutorials:
+  Reference: https://learn.adafruit.com/capacitive-touch-with-conductive-fabric-and-flora/overview
+  Reference: https://learn.adafruit.com/adafruit-flora-bluefruit-le
+  Reference: https://learn.adafruit.com/flora-rgb-smart-pixels/run-pixel-test-code
