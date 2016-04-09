@@ -6,6 +6,7 @@ Simple code to interact with my Adafruit Flora over a connected Adafruit Flora B
         the characteristic's "notify" property, which simply means GREEN is written to the console when the
         sensor is touched.
 ## Install
-$ node install
+$ npm install
+(don't worry about the warnings and errors)
 ## Usage
 $ node noble_uart.js
