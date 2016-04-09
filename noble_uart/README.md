@@ -1,4 +1,5 @@
-Author: John B Damask
+#Author: 
+##John B Damask
 Created: April 9, 2016
 Purpose: Simple code to interact with my Adafruit Flora over a connected Adafruit Flora Bluefruit LE component. 
          I have the controller programmed with other code from this repo that listens to UART.RX for "RED", which 
