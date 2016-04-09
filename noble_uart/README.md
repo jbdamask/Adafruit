@@ -7,6 +7,7 @@ Simple code to interact with my Adafruit Flora over a connected Adafruit Flora B
         sensor is touched.
 ## Install
 $ npm install
+
 (don't worry about the warnings and errors)
 ## Usage
 $ node noble_uart.js
