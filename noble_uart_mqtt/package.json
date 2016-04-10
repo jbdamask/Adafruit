@@ -1,0 +1,16 @@
+{
+  "name": "jbd_ble",
+  "version": "1.0.0",
+  "description": "Bluetooth Low Energy application to test connecting to my Adafruit Flora using a Bluefruit LE device to control the on board neopixel",
+  "main": "ble_uart.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "John B Damask",
+  "license": "MIT",
+  "dependencies": {
+    "noble": "^1.3.0",
+    "events": "^1.1.0",
+    "util": "^0.10.3"
+  }
+}
