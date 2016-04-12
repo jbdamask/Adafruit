@@ -1,4 +1,8 @@
 /*
+Author: John B Damask
+Created: April 2016
+Purpose: Two way communication between microcontroller (Adafruit Flora w/ Bluefruit LE)
+         and Adafruit.io.
  Note: This works great but I've run into situations when re-running it does not
         This seems to have to do with improper disconnection. While I can reconnect
         via gatttools, this code will never find the services and characteristics.
@@ -9,27 +13,46 @@
 */
 
 var noble = require('noble');
-//var prompt = require('prompt');
 const EventEmitter = require('events');
 const util = require('util');
-var stdin=process.stdin;
+var mqtt = require('mqtt');
 
+const ADAFRUIT_IO_KEY = '<yourkey>';
+const ADAFRUIT_IO_USERNAME = '<youru>';
+const FEED_PUB = '<youru>/feeds/<yourfeed1>'; // dunno why but full path to feed required
+const FEED_SUB = '<youru>/feeds/<yourfeed2>';
+
+// Connect to adafruit io
+var client  = mqtt.connect({host: 'io.adafruit.com',
+                            port: 1883,
+                            protocol: 'mqtt',
+                            username: ADAFRUIT_IO_USERNAME,
+                            password: ADAFRUIT_IO_KEY,
+                            connectTimeout: 60 * 1000,
+                            keepalive: 10000
+                          });
+
+client.on('error', function(err) {onErr(err)});
+
+// Set up emitter
 function MyEmitter() {
   EventEmitter.call(this);
 }
-
 util.inherits(MyEmitter, EventEmitter);
 const myEmitter = new MyEmitter();
 
-myEmitter.on('write', function() {
-  console.log('Read from stdin. Writing RED to TX');
+myEmitter.on('read', function(r) {
+  console.log('Read value ' + r + ' from RX');
+  console.log('Publishing to MQTT feed: ' + FEED_PUB);
+  client.publish(FEED_PUB, 'RED\n');
+});
+
+myEmitter.on('message', function(message){
+  console.log("myEmitter -> Received message from MQTT: " + message.toString());
+  if(tx == null) {return};
   tx.write(new Buffer('RED'), true, function(error){
     console.log('Write RED to TX');
   })
-});
-
-myEmitter.on('read', function(r) {
-  console.log('An RX event occurred: ' + r);
 });
 
 const UART_SERVICE_UUID = "6e400001b5a3f393e0a9e50e24dcca9e";
@@ -79,12 +102,6 @@ function findAndConnect(peripheral) {
            console.log('RX notification ON')
          });
 
-
-/*
-         tx.write(new Buffer('RED'),true, function(error){
-           console.log('Wrote RED to TX');
-         });
-*/
       });
 
 
@@ -94,13 +111,21 @@ function findAndConnect(peripheral) {
   });
 }
 
+// Setup Bluetooth LE listeners
 noble.on('stateChange', scan);
 noble.on('discover', findAndConnect);
-stdin.resume();
-stdin.on('data',function(){
-  myEmitter.emit('write');
-}).on('end',function(){ // called when stdin closes (via ^D)
-  console.log('stdin:closed');
+
+// Subscribe to adafruit.io feeds
+client.on('connect', function (err) {
+  console.log('Connecting to MQTT');
+  client.subscribe(FEED_SUB);
+});
+
+client.on('message', function (topic, message) {
+  // message is Buffer
+  console.log("Received message from MQTT: " + message.toString());
+  myEmitter.emit('message', message);
+  //client.end();
 });
 
 
