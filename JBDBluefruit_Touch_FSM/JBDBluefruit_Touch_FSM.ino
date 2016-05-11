@@ -1,6 +1,6 @@
 /*********************************************************************
   Author: Adafruit folks, John B Damask
-  Created: Februafy 2016
+  Created: May 2016
   Purpose: Prototyping
   Function: This code configures various tech from Adafruit including, Flora
             Bluefruit LE, NeoPixel and the capacitive sensor library to do the following:
@@ -71,14 +71,41 @@
     #define FACTORYRESET_ENABLE     1
 //    #define PIN                     12
     // On board NeoPixel
-    #define PIN                     8
-    #define NUMPIXELS               1
+    #define PIN                     12
+    #define NUMPIXELS               60
     #define MINIMUM_FIRMWARE_VERSION    "0.6.6"
     #define MODE_LED_BEHAVIOUR          "MODE"    
 /*=========================================================================*/
 
-//Adafruit_NeoPixel strip = Adafruit_NeoPixel(60, PIN, NEO_GRB + NEO_KHZ800);
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(1, PIN, NEO_GRB + NEO_KHZ800);
+
+int fadeControl = 255;//will hold the current brightness level
+int maxBright = 30; // Maximum brightness of pixels
+int fadeDirection = -1;//change sigen to fade up or down
+int fadeStep = 10;//delay between updates
+
+// #################
+//    States
+// #################
+int _OFF = 1;
+int _CALLING = 2;
+int _IS_CALLED = 3;
+int _CONNECTED = 4;
+int _CONNECTED_LOW_ENERGY = 5;
+int currentState = 1;
+int previousState = 1;
+
+// #################
+//    Timer
+// #################
+long start = 0;
+long maxTime = 5000;
+
+// #################
+//    Touch
+// #################
+int touchTrigger = 1000;
+
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 CapacitiveSensor   cs_9_10 = CapacitiveSensor(9,10);        // 10M resistor between pins 4 & 2, pin 2 is sensor pin, add a wire and or foil if desired
 
 // Create the bluefruit object, either software serial...uncomment these lines
@@ -172,47 +199,127 @@ void setup(void)
 /**************************************************************************/
 void loop(void)
 {
-  long start = millis();
-  long total1 =  cs_9_10.capacitiveSensor(30);
+  long touchValue =  cs_9_10.capacitiveSensor(30);
   /* Wait for new data to arrive */
-  uint8_t len = readPacket(&ble, BLE_READPACKET_TIMEOUT);
-   Serial.print(millis() - start);        // check on performance in milliseconds
-    Serial.print("\t");                    // tab character for debug windown spacing
-    Serial.print(total1);                  // print sensor output 1
-    Serial.print("\t");
-    delay(10);                             // arbitrary delay to limit data to serial port   
-    
-  if(len > 0){
-    // Color
-    strip.setPixelColor(0, strip.Color(255,0,0));
-    strip.setBrightness(30);
-    strip.show();
-    /*
-    if (packetbuffer[1] == 'C') {
-      uint8_t red = packetbuffer[2];
-      uint8_t green = packetbuffer[3];
-      uint8_t blue = packetbuffer[4];
-      Serial.print ("RGB #");
-      if (red < 0x10) Serial.print("0");
-      Serial.print(red, HEX);
-      if (green < 0x10) Serial.print("0");
-      Serial.print(green, HEX);
-      if (blue < 0x10) Serial.print("0");
-      Serial.println(blue, HEX);
-      strip.setPixelColor(0, strip.Color(red,green,blue));
-      strip.setBrightness(50);
-      strip.show();
-    }*/
-  }else if(total1 > 1000) {
-    digitalWrite(7, HIGH);
-    strip.setPixelColor(0, strip.Color(0,255,0));
-    strip.setBrightness(30);
-    strip.show();
-    // Send green signal
-    ble.println("GREEN");
+//  uint8_t len = readPacket(&ble, BLE_READPACKET_TIMEOUT);
+  ble.readline();
+  Serial.println(currentState);
+  Serial.println(ble.buffer);
+  uint8_t len = strcmp(ble.buffer, "");
+  Serial.println(len);
+  /* State control */
+  switch (currentState) {
+    case 1 :
+      if (touchValue > touchTrigger) {
+        start = millis();
+        currentState = 2;
+      } else if (len > 0) {
+        start = millis();
+        currentState = 3; 
+      } else {
+        break;
+      }
 
-  }else{    
-    return;
+    case 2 :
+      if (millis() - start > maxTime) {
+        previousState = currentState;
+        currentState = 1;
+        colorWipe(strip.Color(0,0,0), 10);
+        start = millis();  // probably don't need this
+      } else if (len > 0) {
+        previousState = currentState;
+        currentState = 4;
+        start = millis();  // probably don't need this
+      } else {
+        breathe();
+      }
+      break;
+    case 3 :
+      if (millis() - start > maxTime) {
+        previousState = currentState;
+        currentState = 1;
+        colorWipe(strip.Color(0,0,0), 10);
+        start = millis();  // probably don't need this
+      } else if (touchValue > touchTrigger) {
+        previousState = currentState;
+        currentState = 4;
+        start = millis();  // probably don't need this
+      } else {
+        theaterChase(strip.Color(0, 0, 127), 50); // Blue
+      }      
+      break;
+    case 4 :
+      if (millis() - start > maxTime) {
+        previousState = currentState;
+        currentState = 5;
+        start = millis();
+      } else if (touchValue < touchTrigger || len < 1) {
+       currentState = previousState;
+       start = millis();
+      } else {
+        colorWipe(strip.Color(0, 255, 0), 50); // Green
+      }
+      break;
+    case 5 :
+      if (touchValue < touchTrigger || len < 1) {
+       currentState = previousState;
+       start = millis();
+      } else {
+        colorWipe(strip.Color(100, 100, 100), 50); // 
+      }
+      break;
+    default :
+      // Should never happen
+      currentState = 1;
   }
- 
+}
+
+
+void breathe(){
+  for(uint16_t i=0; i < strip.numPixels(); i++) {
+    strip.setPixelColor(i, 255, 24, 0);//set the pixel colour
+    strip.setBrightness(fadeControl);//set the pixel brightness
+    strip.show();
+   // Serial.println(fadeControl);
+    fadeControl = fadeControl + fadeDirection;//increment the brightness value
+    if (fadeControl <-255 || fadeControl > 255)
+    //If the brightness value has gone past its limits...
+    {
+      fadeDirection = fadeDirection * -1;//change the direction...
+      fadeControl = fadeControl + fadeDirection;//...and start back.
+    }
+      delay(10);
+  }
+
+  //delay(fadeStep);//wait a bit before doing it again.
+}
+
+
+// Fill the dots one after the other with a color
+void colorWipe(uint32_t c, uint8_t wait) {
+  for(uint16_t i=0; i<strip.numPixels(); i++) {
+    strip.setPixelColor(i, c);
+    strip.setBrightness(30);
+    strip.show();
+    //delay(wait);
+  }
+}
+
+
+//Theatre-style crawling lights.
+void theaterChase(uint32_t c, uint8_t wait) {
+  for (int j=0; j<10; j++) {  //do 10 cycles of chasing
+    for (int q=0; q < 3; q++) {
+      for (uint16_t i=0; i < strip.numPixels(); i=i+3) {
+        strip.setPixelColor(i+q, c);    //turn every third pixel on
+      }
+      strip.show();
+
+      delay(wait);
+
+      for (uint16_t i=0; i < strip.numPixels(); i=i+3) {
+        strip.setPixelColor(i+q, 0);        //turn every third pixel off
+      }
+    }
+  }
 }
