@@ -1,7 +1,9 @@
 #JBDBluefruit_Touch_FSM
-##Microcontroller code that connects Flora and Flora Bluefruit LE together with a
-capacitive sensor and NeoPixels. 
+##Overview
+Microcontroller code that connects Flora and Flora Bluefruit LE together with a capacitive sensor and NeoPixels. 
+
 A finite state machine is used to move through several states:
+
 1. Off
 2. Calling
 3. IsCalled
