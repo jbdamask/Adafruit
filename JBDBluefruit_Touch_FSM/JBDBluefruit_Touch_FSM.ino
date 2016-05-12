@@ -1,13 +1,17 @@
 /*********************************************************************
-  Author: Adafruit folks, John B Damask
+  Author: John B Damask, Adafruit folks
   Created: May 2016
   Purpose: Prototyping
   Function: This code configures various tech from Adafruit including, Flora
-            Bluefruit LE, NeoPixel and the capacitive sensor library to do the following:
-            1 - Conductive fabric touched, onboard NeoPixel turns GREEN
-            2 - Pick whatever color using Adafruit Bluefruit LE iPhone app, NeoPixel turns whatever
+            Bluefruit LE, NeoPixel and the capacitive sensor library to allow
+            two devices (made of these tech) to communicate over the web.
+            A central Bluetooth device is required, such as Adafruit's Bluefruit LE 
+            smart phone app (in fact this code waits until our BLE peripheral 
+            connects). 
+            To make two devices communicate you'll need a broker, such as adafruit.io.
+            The smart phone app lets you pub/sub to feeds.
  
-  Notes: This is basically a mash up of various Adafruit tutorials:
+  Notes: This liberally uses code from various Adafruit tutorials:
   Reference: https://learn.adafruit.com/capacitive-touch-with-conductive-fabric-and-flora/overview
   Reference: https://learn.adafruit.com/adafruit-flora-bluefruit-le
   Reference: https://learn.adafruit.com/flora-rgb-smart-pixels/run-pixel-test-code
@@ -27,65 +31,30 @@
 #include <CapacitiveSensor.h>
 #include <string.h>
 #include <Arduino.h>
-#include <SPI.h>
+//#include <SPI.h>
 #if not defined (_VARIANT_ARDUINO_DUE_X_) && not defined (_VARIANT_ARDUINO_ZERO_)
   #include <SoftwareSerial.h>
 #endif
-
 #include "Adafruit_BLE.h"
 #include "Adafruit_BluefruitLE_SPI.h"
 #include "Adafruit_BluefruitLE_UART.h"
 #include "BluefruitConfig.h"
 #include <Adafruit_NeoPixel.h>
+#include "JBDBluefruit_Touch_FSM.h"
 
 
-/*=========================================================================
-    APPLICATION SETTINGS
+// ###################################################
+//    Initialize variables for breathe() function
+// ###################################################
 
-    FACTORYRESET_ENABLE       Perform a factory reset when running this sketch
-   
-                              Enabling this will put your Bluefruit LE module
-                              in a 'known good' state and clear any config
-                              data set in previous sketches or projects, so
-                              running this at least once is a good idea.
-   
-                              When deploying your project, however, you will
-                              want to disable factory reset by setting this
-                              value to 0.  If you are making changes to your
-                              Bluefruit LE device via AT commands, and those
-                              changes aren't persisting across resets, this
-                              is the reason why.  Factory reset will erase
-                              the non-volatile memory where config data is
-                              stored, setting it back to factory default
-                              values.
-       
-                              Some sketches that require you to bond to a
-                              central device (HID mouse, keyboard, etc.)
-                              won't work at all with this feature enabled
-                              since the factory reset will clear all of the
-                              bonding data stored on the chip, meaning the
-                              central device won't be able to reconnect.
-    PIN                       Which pin on the Arduino is connected to the NeoPixels?
-    NUMPIXELS                 How many NeoPixels are attached to the Arduino?
-    -----------------------------------------------------------------------*/
-    #define FACTORYRESET_ENABLE     1
-//    #define PIN                     12
-    // On board NeoPixel
-    #define PIN                     12
-    #define NUMPIXELS               60
-    #define MINIMUM_FIRMWARE_VERSION    "0.6.6"
-    #define MODE_LED_BEHAVIOUR          "MODE"    
-/*=========================================================================*/
-
-
-int fadeControl = 255;//will hold the current brightness level
+int fadeControl = 0;//will hold the current brightness level
 int maxBright = 30; // Maximum brightness of pixels
 int fadeDirection = -1;//change sigen to fade up or down
 int fadeStep = 10;//delay between updates
 
-// #################
-//    States
-// #################
+// ###################################################
+//                States
+// ###################################################
 int _OFF = 1;
 int _CALLING = 2;
 int _IS_CALLED = 3;
@@ -94,44 +63,40 @@ int _CONNECTED_LOW_ENERGY = 5;
 int currentState = 1;
 int previousState = 1;
 
-// #################
-//    Timer
-// #################
+// ###################################################
+//                Timer
+// ###################################################
 long start = 0;
-long maxTime = 5000;
+long maxTime = 10000;
 
-// #################
-//    Touch
-// #################
+// ###################################################
+//                Touch Sensor
+// ###################################################
 int touchTrigger = 1000;
 
+// ###################################################
+//                Initialize Libraries, etc
+// ###################################################
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 CapacitiveSensor   cs_9_10 = CapacitiveSensor(9,10);        // 10M resistor between pins 4 & 2, pin 2 is sensor pin, add a wire and or foil if desired
-
 // Create the bluefruit object, either software serial...uncomment these lines
- Adafruit_BluefruitLE_UART ble(BLUEFRUIT_HWSERIAL_NAME, BLUEFRUIT_UART_MODE_PIN);
-
+Adafruit_BluefruitLE_UART ble(BLUEFRUIT_HWSERIAL_NAME, BLUEFRUIT_UART_MODE_PIN);
+// function prototypes over in packetparser.cpp
+uint8_t readPacket(Adafruit_BLE *ble, uint16_t timeout);
+float parsefloat(uint8_t *buffer);
+void printHex(const uint8_t * data, const uint32_t numBytes);
+// the packet buffer for ble
+extern uint8_t packetbuffer[];
 // A small helper
 void error(const __FlashStringHelper*err) {
   Serial.println(err);
   while (1);
 }
 
-// function prototypes over in packetparser.cpp
-uint8_t readPacket(Adafruit_BLE *ble, uint16_t timeout);
-float parsefloat(uint8_t *buffer);
-void printHex(const uint8_t * data, const uint32_t numBytes);
 
-// the packet buffer
-extern uint8_t packetbuffer[];
-
-
-/**************************************************************************/
-/*!
-    @brief  Sets up the HW an the BLE module (this function is called
-            automatically on startup)
-*/
-/**************************************************************************/
+// ###################################################
+//                Initialize BLE module
+// ###################################################
 void setup(void)
 {
  // while (!Serial);  // required for Flora & Micro
@@ -191,23 +156,28 @@ void setup(void)
 
 }
 
-/**************************************************************************/
-/*!
-    @brief  This is the meat. Constantly poll for new command from either
-    the iPhone app controller or the fabric controller.
-*/
-/**************************************************************************/
+// ###################################################
+//                Logic Flow
+// ###################################################
 void loop(void)
 {
   long touchValue =  cs_9_10.capacitiveSensor(30);
-  /* Wait for new data to arrive */
-//  uint8_t len = readPacket(&ble, BLE_READPACKET_TIMEOUT);
   ble.readline();
-  Serial.println(currentState);
-  Serial.println(ble.buffer);
+  Serial.print("State: ");
+  Serial.print(currentState);
+  Serial.println("");
+  Serial.print("\tTouch: ");
+  Serial.print(touchValue);
+  Serial.println("");
   uint8_t len = strcmp(ble.buffer, "");
-  Serial.println(len);
+  if(len != 0){
+    Serial.println(len);
+    //delay(100);
+    Serial.println(millis() - start);
+  }
+  /*****************/
   /* State control */
+  /*****************/
   switch (currentState) {
     case 1 :
       if (touchValue > touchTrigger) {
@@ -216,9 +186,9 @@ void loop(void)
       } else if (len > 0) {
         start = millis();
         currentState = 3; 
-      } else {
-        break;
       }
+      delay(100); 
+      break;
 
     case 2 :
       if (millis() - start > maxTime) {
@@ -234,13 +204,14 @@ void loop(void)
         breathe();
       }
       break;
+      
     case 3 :
       if (millis() - start > maxTime) {
         previousState = currentState;
         currentState = 1;
         colorWipe(strip.Color(0,0,0), 10);
         start = millis();  // probably don't need this
-      } else if (touchValue > touchTrigger) {
+      } else if (touchValue > touchTrigger && millis() - start > 2) {
         previousState = currentState;
         currentState = 4;
         start = millis();  // probably don't need this
@@ -248,22 +219,31 @@ void loop(void)
         theaterChase(strip.Color(0, 0, 127), 50); // Blue
       }      
       break;
+      
     case 4 :
-      if (millis() - start > maxTime) {
+      Serial.print("\t\t Time diff: ");
+      Serial.print(millis() - start);
+      Serial.println("");
+      if (millis() - start > maxTime * 5) {
         previousState = currentState;
         currentState = 5;
         start = millis();
-      } else if (touchValue < touchTrigger || len < 1) {
+      } else if ( (touchValue < touchTrigger || len < 1) && millis() - start > maxTime * 2) {
+       /* Potential BUG - this condition will fail unless ble.x->gateway->broker->gateway->ble.y 
+          is constantly sending messages from touching. */ 
        currentState = previousState;
        start = millis();
       } else {
-        colorWipe(strip.Color(0, 255, 0), 50); // Green
+        rainbowCycle(50);
       }
       break;
+      
     case 5 :
-      if (touchValue < touchTrigger || len < 1) {
-       currentState = previousState;
-       start = millis();
+      if ((touchValue < touchTrigger || len < 1) && millis() - start > maxTime * 2) {
+       /* Potential BUG - this condition will fail unless ble.x->gateway->broker->gateway->ble.y 
+          is constantly sending messages from touching. */ 
+        currentState = previousState;
+        start = millis();
       } else {
         colorWipe(strip.Color(100, 100, 100), 50); // 
       }
@@ -271,6 +251,7 @@ void loop(void)
     default :
       // Should never happen
       currentState = 1;
+      break;
   }
 }
 
@@ -299,7 +280,7 @@ void breathe(){
 void colorWipe(uint32_t c, uint8_t wait) {
   for(uint16_t i=0; i<strip.numPixels(); i++) {
     strip.setPixelColor(i, c);
-    strip.setBrightness(30);
+    strip.setBrightness(BRIGHTNESS);
     strip.show();
     //delay(wait);
   }
@@ -313,6 +294,7 @@ void theaterChase(uint32_t c, uint8_t wait) {
       for (uint16_t i=0; i < strip.numPixels(); i=i+3) {
         strip.setPixelColor(i+q, c);    //turn every third pixel on
       }
+      strip.setBrightness(BRIGHTNESS);
       strip.show();
 
       delay(wait);
@@ -322,4 +304,33 @@ void theaterChase(uint32_t c, uint8_t wait) {
       }
     }
   }
+}
+
+// Slightly different, this makes the rainbow equally distributed throughout
+void rainbowCycle(uint8_t wait) {
+  uint16_t i, j;
+
+  for(j=0; j<256*5; j++) { // 5 cycles of all colors on wheel
+    for(i=0; i< strip.numPixels(); i++) {
+      strip.setPixelColor(i, Wheel(((i * 256 / strip.numPixels()) + j) & 255));
+    }
+    strip.setBrightness(BRIGHTNESS);
+    strip.show();
+    //delay(wait);
+  }
+}
+
+// Input a value 0 to 255 to get a color value.
+// The colours are a transition r - g - b - back to r.
+uint32_t Wheel(byte WheelPos) {
+  WheelPos = 255 - WheelPos;
+  if(WheelPos < 85) {
+    return strip.Color(255 - WheelPos * 3, 0, WheelPos * 3);
+  }
+  if(WheelPos < 170) {
+    WheelPos -= 85;
+    return strip.Color(0, WheelPos * 3, 255 - WheelPos * 3);
+  }
+  WheelPos -= 170;
+  return strip.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
 }
