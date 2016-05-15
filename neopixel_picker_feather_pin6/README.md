@@ -4,15 +4,12 @@ Adafruit NeoPixel strip and Feather BluefruitLE.
 I use a 5V 2A plug and soldered it into the feather
 
 Plug power -> Feather BAT
-
            -> NeoPixel power
            
 Plug ground -> Feather GND
-
             -> neopixel ground
             
 Neopixel data -> feather pin 6
-
 Neopixel data ground -> feather ground
 
 (I don't know why the neopixel strip has two ground wires coming out of the end)
@@ -24,5 +21,6 @@ Colors set from color picker and effects from controller. For the latter, we hav
 
 ### Note
 At 3:45 in the video [NeoPixel Bluetooth Control Coding with Becky Stern](https://www.youtube.com/watch?v=Kym6crZF1Pg) she gives the secret to running the Adafruit BluefruitLE nRF51 neopixel_picker code w/out being connected to a computer. You need to comment out line 110 that says:
-while (!Serial);
+
+           -> while (!Serial);
 
