@@ -1,4 +1,4 @@
-# neopixel_picker_feather_pin6
+# Under cabinet lighting
 ## Description
 Under the counter lights made from Adafruit NeoPixel strip controlled via Feather BluefruitLE.
 
