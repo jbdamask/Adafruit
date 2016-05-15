@@ -22,5 +22,5 @@ Colors set from color picker and effects from controller. For the latter, we hav
 ### Note
 At 3:45 in the video [NeoPixel Bluetooth Control Coding with Becky Stern](https://www.youtube.com/watch?v=Kym6crZF1Pg) she gives the secret to running the Adafruit BluefruitLE nRF51 neopixel_picker code w/out being connected to a computer. You need to comment out line 110 that says:
 
-           -> while (!Serial);
+           while (!Serial);
 
