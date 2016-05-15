@@ -4,10 +4,15 @@ Adafruit NeoPixel strip and Feather BluefruitLE.
 I use a 5V 2A plug and soldered it into the feather
 
 Plug power -> Feather BAT
+
            -> NeoPixel power
+           
 Plug ground -> Feather GND
+
             -> neopixel ground
+            
 Neopixel data -> feather pin 6
+
 Neopixel data ground -> feather ground
 
 (I don't know why the neopixel strip has two ground wires coming out of the end)
