@@ -9,6 +9,7 @@ Under the counter lights made from Adafruit NeoPixel strip controlled via Feathe
 * [Terminal block](https://www.adafruit.com/products/368)
 
 ## Circuit
+[See picture](https://github.com/jbdamask/Adafruit/blob/master/neopixel_picker_feather_pin6/feather_ble_neopixel_circuit.jpg)
 Plug power -> Feather BAT
            & NeoPixel power
            
