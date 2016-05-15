@@ -7,10 +7,10 @@ Plug power -> Feather BAT
            & NeoPixel power
            
 Plug ground -> Feather GND
-            & neopixel ground
+            & NeoPixel ground
             
-Neopixel data -> feather pin 6
-Neopixel data ground -> feather ground
+NeoPixel data -> Feather pin 6
+NeoPixel data ground -> Feather ground
 
 (I don't know why the neopixel strip has two ground wires coming out of the end)
 
