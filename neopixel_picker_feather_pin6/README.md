@@ -1,4 +1,4 @@
-# Under cabinet lighting
+# Under cabinet lighting for under $60
 ## Description
 Under the counter lights made from Adafruit NeoPixel strip controlled via Feather BluefruitLE.
 
