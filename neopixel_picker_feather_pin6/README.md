@@ -7,6 +7,7 @@ Under the counter lights made from Adafruit NeoPixel strip controlled via Feathe
 * [NeoPixel Strip](https://www.adafruit.com/products/1376) cut to about 1 meter (actually 42 pixels)
 * [5Volt 2Amp plug](https://www.adafruit.com/products/276)
 * [Terminal block](https://www.adafruit.com/products/368)
+* [2-pin JST SM plug + Receptacle Cable Set](https://www.adafruit.com/products/2880)
 
 ## Circuit
 [See photo](https://github.com/jbdamask/Adafruit/blob/master/neopixel_picker_feather_pin6/feather_ble_neopixel_circuit.jpg)
