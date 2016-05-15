@@ -1,8 +1,14 @@
 # neopixel_picker_feather_pin6
 ## Description
-Adafruit NeoPixel strip and Feather BluefruitLE.
-I use a 5V 2A plug and soldered it into the feather
+Under the counter lights made from Adafruit NeoPixel strip controlled via Feather BluefruitLE.
 
+## Parts
+* [Feather BluefruitLE](https://www.adafruit.com/products/2829)
+* [NeoPixel Strip](https://www.adafruit.com/products/1376) cut to about 1 meter (actually 42 pixels)
+* [5Volt 2Amp plug](https://www.adafruit.com/products/276)
+* [Terminal block](https://www.adafruit.com/products/368)
+
+## Circuit
 Plug power -> Feather BAT
            & NeoPixel power
            
@@ -14,6 +20,7 @@ NeoPixel data ground -> Feather ground
 
 (I don't know why the neopixel strip has two ground wires coming out of the end)
 
+## Other stuff
 The software is a combination of Adafruit examples from the Adafruit BluefruitLE nRF51 and Adafruit NeoPixel libraries (these can be installed in your Arduino IDE): neopixel_picker, bluefruit controller and neopixel strand test.
 
 The strip is controlled using the [Adafruit Bluefruit LE iPhone](https://itunes.apple.com/us/app/adafruit-bluefruit-le-connect/id830125974?mt=8) app.
