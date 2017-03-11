@@ -10,6 +10,11 @@
  MIT license, check LICENSE for more information
  All text above, and the splash screen below must be included in
  any redistribution
+
+ John B Damask
+ Note that this script is for RGBW NeoPixels like the 60LED String, http://adafru.it/2842
+ Per this post, https://forums.adafruit.com/viewtopic.php?f=47&t=82329, I had to move around
+ the "W" in the GRBW parameter for neopixel instantiation to get the colors right.
 *********************************************************************/
 
 #include <string.h>
@@ -59,14 +64,14 @@
     #define FACTORYRESET_ENABLE     1
 
     #define PIN                     6
-    #define NUMPIXELS               60
+    #define NUMPIXELS               120
     #define MIN                     1
     #define MAX                     255
 /*=========================================================================*/
 
 uint8_t output = 0;
 
-Adafruit_NeoPixel pixel = Adafruit_NeoPixel(NUMPIXELS, PIN);
+Adafruit_NeoPixel pixel = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRBW + NEO_KHZ800);
 
 // Create the bluefruit object, either software serial...uncomment these lines
 /*
@@ -117,7 +122,7 @@ void setup(void)
   // turn off neopixel
   pixel.begin(); // This initializes the NeoPixel library.
   for(uint8_t i=0; i<NUMPIXELS; i++) {
-    pixel.setPixelColor(i, pixel.Color(0,0,0)); // off
+    pixel.setPixelColor(i, pixel.Color(0,0,0,0)); // off
   }
   pixel.show();
 
@@ -207,7 +212,7 @@ void loop(void)
           theaterChaseRainbow(10);
           break;
         default:
-          colorWipe(pixel.Color(0,0,0), 10);          
+          colorWipe(pixel.Color(0,0,0,0), 10);          
           break;
       }
       Serial.println(" pressed");
@@ -221,6 +226,7 @@ void loop(void)
     uint8_t red = packetbuffer[2];
     uint8_t green = packetbuffer[3];
     uint8_t blue = packetbuffer[4];
+    uint8_t white = packetbuffer[5];
     Serial.print ("RGB #");
     if (red < 0x10) Serial.print("0");
     Serial.print(red, HEX);
@@ -228,12 +234,14 @@ void loop(void)
     Serial.print(green, HEX);
     if (blue < 0x10) Serial.print("0");
     Serial.println(blue, HEX);
+    if (white< 0x10) Serial.print("0");
+    Serial.println(white, HEX);
 
     for(uint8_t i=0; i<NUMPIXELS; i++) {
        Serial.print("Setting color for pixel: ");
        Serial.print(i);
        Serial.println("");
-      pixel.setPixelColor(i, pixel.Color(red,green,blue));
+       pixel.setPixelColor(i, pixel.Color(red,green,blue,white));
        pixel.show(); // This sends the updated pixel color to the hardware.
     }
    
