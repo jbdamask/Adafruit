@@ -93,7 +93,6 @@ void loop() {
   for (uint8_t i=0; i<NUMTOUCH; i++) {
     // it if *is* touched and *wasnt* touched before, alert!
     if ((currtouched & _BV(i)) && !(lasttouched & _BV(i)) ) {
-      Serial.print(i); Serial.println(" touched");
       if(i>8) {
         animation = true;
       } else {
@@ -102,18 +101,46 @@ void loop() {
       }
       state = i;
     }
+/*        
     // if it *was* touched and now *isnt*, alert!
     if (!(currtouched & _BV(i)) && (lasttouched & _BV(i)) ) {
       Serial.print(i); Serial.println(" released");
       strip.setPixelColor(i+1,0,0,0);
-    }
+    } */
     strip.show();
   }
   
   // reset our state
   lasttouched = currtouched;
-  if(animation==true) {   
+  //if(animation==true) {   
     switch (state){
+      case 0:
+        colorWipe(strip.Color(0,0,0));
+        break;        
+      case 1:
+        colorWipe(strip.Color(113,40,180));
+        break;      
+      case 2:
+        colorWipe(strip.Color(255,0,0));    
+        break;
+      case 3:
+        colorWipe(strip.Color(0,255,0));      
+        break;
+      case 4:
+        colorWipe(strip.Color(0,0,255));      
+        break;
+      case 5:
+        colorWipe(strip.Color(255,255,0));      
+        break;
+      case 6:
+        colorWipe(strip.Color(255,0,255));            
+        break;
+      case 7:
+        colorWipe(strip.Color(255,255,0));            
+        break;
+      case 8:
+        colorWipe(strip.Color(0,255,255));  
+        break;
       case 9:
         rainbow();
         break;
@@ -134,6 +161,7 @@ void loop() {
       break;  
     }
     
+  if(animation==true) {     
     index++;
   } else {
      // put a delay so it isn't overwhelming
