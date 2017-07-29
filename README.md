@@ -1,5 +1,6 @@
-# Adafruit
-Repo for messing around with Adafruit goodies
-Basically a small amount of good stuff mixed in with troves of NOOB junk.
+Bluefruit_LE_tx_rx
+==================
 
-As of May 10, 2016 the code I'm most interested in is JBDBluefruit_Touch_MQTT. This is a working version of how to communicate using NeoPixel colors over MQTT. Adafruit.io is the broker, iPhone app is the gateway and my devices use Flora Bluefruit LE as peripherals.
+Using RGB neopixels, and MPR121 capacitive touch breakout, Feather Bluefruit 32u4.
+The Feather can both read and write from BLE. The idea is that colors can come in from a central device (e.g. a Pi) or you can touch a pad connected to a sensor and send that color to the device. Note that I've adopted the payload format from Adafruit for sending Colors  (as reconstructed from packetParser.cpp). Basically it's !C<red><green><blue><checksum>
+
