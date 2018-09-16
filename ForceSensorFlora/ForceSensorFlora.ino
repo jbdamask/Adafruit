@@ -16,6 +16,11 @@ int fsrAnalogPin = 10; // FSR is connected to analog 0
 int fsrReading;      // the analog reading from the FSR resistor divider
 int LEDbrightness;
 
+#define FROM_LOW 0
+#define FROM_HIGH 1023
+#define TO_LOW 0
+#define TO_HIGH 100
+
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(1, PIN, NEO_GRB + NEO_KHZ800);
 
 void setup(void) {
@@ -33,7 +38,13 @@ void loop(void) {
   
   // we'll need to change the range from the analog reading (0-1023) down to the range
   // used by analogWrite (0-100) with map!
-  LEDbrightness = map(fsrReading, 0, 1023, 0, 100);
+  // map(value, fromLow, fromHigh, toLow, toHigh)
+  // Map From-To ranges
+//  int fromLow = 0;
+//  int fromHigh = 1023;
+//  int toLow = 0;
+//  int toHigh = 50;
+  LEDbrightness = map(fsrReading, FROM_LOW, FROM_HIGH, TO_LOW, TO_HIGH);
   // LED gets brighter the harder you press
   Serial.println(LEDbrightness);
   strip.setPixelColor(0, strip.Color(255, 0, 0));
