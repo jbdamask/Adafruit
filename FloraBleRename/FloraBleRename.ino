@@ -4,7 +4,7 @@
 */
 #include "Adafruit_BluefruitLE_UART.h"
 
-// If using a Flora Bluefruit LE board, connect MODE pin to Flora D12 and change this to 12
+// If using a Flora Bluefruit LE board, connect MODE pin to Flora D12 and set this to 12. -1 otherwise
 #define MODE_PIN    12
 #define BLE_NAME "AT+GAPDEVNAME=I changed the name"
 
