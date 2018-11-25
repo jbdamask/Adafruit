@@ -4,7 +4,7 @@
 // By Mike Cook Jan 2016
 
 #define PINforControl   6 // pin connected to the small NeoPixels strip
-#define NUMPIXELS1      12 // number of LEDs on strip
+#define NUMPIXELS1      256 // number of LEDs on strip
 
 #include <Adafruit_NeoPixel.h>
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUMPIXELS1, PINforControl, NEO_GRB + NEO_KHZ800);
@@ -48,7 +48,7 @@ void  updatePattern(int pat){ // call the pattern currently being created
         theaterChaseRainbow(); 
         break;
     case 3:
-         colorWipe(strip.Color(0, 0, 0)); // red
+         colorWipe(strip.Color(255, 0, 0)); // red
          break;     
   }  
 }
