@@ -116,7 +116,7 @@ void colorWipe(uint32_t c) { // modified from Adafruit example to make it a stat
 }
 
 void breatheBlue() { // modified from Adafruit example to make it a state machine
-  float MaximumBrightness = 100;
+  float MaximumBrightness = 255;
   float SpeedFactor = 0.008; // I don't actually know what would look good
   static int i = 0;
   // Make the lights breathe
