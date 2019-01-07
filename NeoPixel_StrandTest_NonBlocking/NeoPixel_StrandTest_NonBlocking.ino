@@ -15,7 +15,7 @@ unsigned long intervals [] = { 20, 20, 50, 100 } ; // speed for each pattern
 const byte button = 10; // pin to connect button switch to between pin and ground
 
 void setup() {
-  strip.setBrightness(30);
+  strip.setBrightness(30); // These things are bright!
   strip.begin(); // This initializes the NeoPixel library.
   wipe(); // wipes the LED buffers
   pinMode(button, INPUT_PULLUP); // change pattern button
