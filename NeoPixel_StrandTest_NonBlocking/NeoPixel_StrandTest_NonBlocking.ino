@@ -4,7 +4,7 @@
 // By Mike Cook Jan 2016
 
 #define PINforControl   6 // pin connected to the small NeoPixels strip
-#define NUMPIXELS1      256 // number of LEDs on strip
+#define NUMPIXELS1      13 // number of LEDs on strip
 
 #include <Adafruit_NeoPixel.h>
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUMPIXELS1, PINforControl, NEO_GRB + NEO_KHZ800);
