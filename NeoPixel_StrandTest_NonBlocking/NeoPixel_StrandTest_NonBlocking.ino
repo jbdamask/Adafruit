@@ -11,8 +11,9 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUMPIXELS1, PINforControl, NEO_GRB +
 
 unsigned long patternInterval = 20 ; // time between steps in the pattern
 unsigned long lastUpdate = 0 ; // for millis() when last update occoured
-unsigned long intervals [] = { 20, 20, 50, 100 } ; // speed for each pattern
+unsigned long intervals [] = { 20, 20, 50, 100, 2 } ; // speed for each pattern
 const byte button = 10; // pin to connect button switch to between pin and ground
+
 
 void setup() {
   strip.setBrightness(30); // These things are bright!
@@ -26,7 +27,7 @@ void loop() {
   int reading = digitalRead(button);
   if(lastReading == HIGH && reading == LOW){
     pattern++ ; // change pattern number
-    if(pattern > 3) pattern = 0; // wrap round if too big
+    if(pattern > 4) pattern = 0; // wrap round if too big
     patternInterval = intervals[pattern]; // set speed for this pattern
     wipe(); // clear out the buffer 
     delay(50); // debounce delay
@@ -48,8 +49,11 @@ void  updatePattern(int pat){ // call the pattern currently being created
         theaterChaseRainbow(); 
         break;
     case 3:
-         colorWipe(strip.Color(255, 0, 0)); // red
-         break;     
+        colorWipe(strip.Color(255, 0, 0)); // red
+        break;  
+    case 4:
+        breatheBlue();
+        break;   
   }  
 }
 
@@ -109,6 +113,24 @@ void colorWipe(uint32_t c) { // modified from Adafruit example to make it a stat
     wipe(); // blank out strip
   }
   lastUpdate = millis(); // time for next change to the display
+}
+
+void breatheBlue() { // modified from Adafruit example to make it a state machine
+  float MaximumBrightness = 100;
+  float SpeedFactor = 0.008; // I don't actually know what would look good
+  static int i = 0;
+  // Make the lights breathe
+  float intensity = MaximumBrightness /2.0 * (1.0 + sin(SpeedFactor * i));
+  strip.setBrightness(intensity);
+  for (int j=0; j<strip.numPixels(); j++) {
+    strip.setPixelColor(j, 0, 127, 127);
+  }
+  strip.show();
+  i++;
+  if(i >= 65535){
+    i = 0;
+  }
+  lastUpdate = millis();
 }
 
 
