@@ -15,7 +15,7 @@ unsigned long lastUpdate = 0 ; // for millis() when last update occoured
 unsigned long intervals [] = { 20, 20, 50, 100, 2, 50 } ; // speed for each pattern
 const byte button = 10; // pin to connect button switch to between pin and ground
 
-// Colors for flashRandom
+// Colors for sparkle
 uint8_t myFavoriteColors[][3] = {{200,   0, 200},   // purple
                                  {200,   0,   0},   // red 
                                  {200, 200, 200},   // white
@@ -64,7 +64,7 @@ void  updatePattern(int pat){ // call the pattern currently being created
         break;   
     case 5:
         wipe();
-        flashRandom(3);
+        sparkle(3);
         break;
   }  
 }
@@ -145,7 +145,7 @@ void breatheBlue() { // modified from Adafruit example to make it a state machin
   lastUpdate = millis();
 }
 
-void flashRandom(uint8_t howmany) {
+void sparkle(uint8_t howmany) {
 
   static int x = 0;
   static bool goingUp = true;
