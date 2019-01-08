@@ -5,18 +5,25 @@
 
 #define PINforControl   6 // pin connected to the small NeoPixels strip
 #define NUMPIXELS1      13 // number of LEDs on strip
+#define BRIGHTNESS      30 // Max brightness of NeoPixels
 
 #include <Adafruit_NeoPixel.h>
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUMPIXELS1, PINforControl, NEO_GRB + NEO_KHZ800);
 
 unsigned long patternInterval = 20 ; // time between steps in the pattern
 unsigned long lastUpdate = 0 ; // for millis() when last update occoured
-unsigned long intervals [] = { 20, 20, 50, 100, 2 } ; // speed for each pattern
+unsigned long intervals [] = { 20, 20, 50, 100, 2, 50 } ; // speed for each pattern
 const byte button = 10; // pin to connect button switch to between pin and ground
 
+// Colors for flashRandom
+uint8_t myFavoriteColors[][3] = {{200,   0, 200},   // purple
+                                 {200,   0,   0},   // red 
+                                 {200, 200, 200},   // white
+                               };
+#define FAVCOLORS sizeof(myFavoriteColors) / 3
 
 void setup() {
-  strip.setBrightness(30); // These things are bright!
+  strip.setBrightness(BRIGHTNESS); // These things are bright!
   strip.begin(); // This initializes the NeoPixel library.
   wipe(); // wipes the LED buffers
   pinMode(button, INPUT_PULLUP); // change pattern button
@@ -27,9 +34,10 @@ void loop() {
   int reading = digitalRead(button);
   if(lastReading == HIGH && reading == LOW){
     pattern++ ; // change pattern number
-    if(pattern > 4) pattern = 0; // wrap round if too big
+    if(pattern > 5) pattern = 0; // wrap round if too big
     patternInterval = intervals[pattern]; // set speed for this pattern
     wipe(); // clear out the buffer 
+    resetBrightness();
     delay(50); // debounce delay
   }
   lastReading = reading; // save for next time
@@ -54,6 +62,10 @@ void  updatePattern(int pat){ // call the pattern currently being created
     case 4:
         breatheBlue();
         break;   
+    case 5:
+        wipe();
+        flashRandom(3);
+        break;
   }  
 }
 
@@ -116,7 +128,7 @@ void colorWipe(uint32_t c) { // modified from Adafruit example to make it a stat
 }
 
 void breatheBlue() { // modified from Adafruit example to make it a state machine
-  float MaximumBrightness = 255;
+  float MaximumBrightness = 30;
   float SpeedFactor = 0.008; // I don't actually know what would look good
   static int i = 0;
   // Make the lights breathe
@@ -133,12 +145,58 @@ void breatheBlue() { // modified from Adafruit example to make it a state machin
   lastUpdate = millis();
 }
 
+void flashRandom(uint8_t howmany) {
+
+  static int x = 0;
+  static bool goingUp = true;
+  
+  for(uint16_t i=0; i<howmany; i++) {
+    // pick a random favorite color!
+    int c = random(FAVCOLORS);
+    int red = myFavoriteColors[c][0];
+    int green = myFavoriteColors[c][1];
+    int blue = myFavoriteColors[c][2]; 
+
+    // get a random pixel from the list
+    int j = random(strip.numPixels());
+    
+    // now we will 'fade' it in 5 steps
+    if(goingUp){
+      if(x < 5) {
+        x++;
+      } else {
+        goingUp = false;
+      }
+    } else {
+      if(x>0){
+        x--;
+      } else {
+        goingUp = true;
+      }     
+    }
+
+    int r = red * (x+1); r /= 5;
+    int g = green * (x+1); g /= 5;
+    int b = blue * (x+1); b /= 5;      
+    strip.setPixelColor(j, strip.Color(r,g,b));      
+    strip.show();
+  }
+  lastUpdate = millis();
+}
+
+
 
 void wipe(){ // clear all LEDs
      for(int i=0;i<strip.numPixels();i++){
        strip.setPixelColor(i, strip.Color(0,0,0)); 
        }
 }
+
+
+void resetBrightness(){
+  strip.setBrightness(BRIGHTNESS);
+}
+
 
 uint32_t Wheel(byte WheelPos) {
   WheelPos = 255 - WheelPos;
